@@ -1,16 +1,285 @@
-﻿replicaCount: 1
-
+replicaCount: 1
 image:
-  tag: "0.0.0"
-
+  tag: "1.0.1"
 config:
-  APP_VERSION: "0.0.0"
+  APP_VERSION: "1.0.1"
   LOG_LEVEL: debug
-
 ingress:
   host: development.sa-p8.local
-
 hpa:
   minReplicas: 1
   maxReplicas: 2
-
+---
+replicaCount: 1
+image:
+  tag: "1.0.1"
+config:
+  APP_VERSION: "1.0.1"
+  LOG_LEVEL: info
+ingress:
+  host: sa-p8.local
+hpa:
+  minReplicas: 1
+  maxReplicas: 2
+resources:
+  requests:
+    cpu: 150m
+    memory: 192Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+---
+replicaCount: 1
+image:
+  tag: "1.0.1"
+config:
+  APP_VERSION: "1.0.1"
+  LOG_LEVEL: debug
+hpa:
+  minReplicas: 1
+  maxReplicas: 2
+---
+replicaCount: 1
+image:
+  tag: "1.0.1"
+config:
+  APP_VERSION: "1.0.1"
+  LOG_LEVEL: info
+hpa:
+  minReplicas: 1
+  maxReplicas: 2
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 300m
+    memory: 320Mi
+---
+replicaCount: 1
+image:
+  tag: "1.0.1"
+config:
+  APP_VERSION: "1.0.1"
+  LOG_LEVEL: debug
+hpa:
+  minReplicas: 1
+  maxReplicas: 2
+---
+replicaCount: 1
+image:
+  tag: "1.0.1"
+config:
+  APP_VERSION: "1.0.1"
+  LOG_LEVEL: info
+hpa:
+  minReplicas: 1
+  maxReplicas: 2
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 300m
+    memory: 320Mi
+---
+replicaCount: 1
+image:
+  tag: "1.0.1"
+config:
+  APP_VERSION: "1.0.1"
+  LOG_LEVEL: debug
+hpa:
+  minReplicas: 1
+  maxReplicas: 2
+---
+replicaCount: 1
+image:
+  tag: "1.0.1"
+config:
+  APP_VERSION: "1.0.1"
+  LOG_LEVEL: info
+hpa:
+  minReplicas: 1
+  maxReplicas: 2
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 300m
+    memory: 320Mi
+---
+replicaCount: 1
+image:
+  tag: "1.0.1"
+config:
+  APP_VERSION: "1.0.1"
+  LOG_LEVEL: debug
+hpa:
+  minReplicas: 1
+  maxReplicas: 2
+---
+replicaCount: 1
+image:
+  tag: "1.0.1"
+config:
+  APP_VERSION: "1.0.1"
+  LOG_LEVEL: info
+hpa:
+  minReplicas: 1
+  maxReplicas: 2
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 300m
+    memory: 320Mi
+---
+image:
+  tag: "1.0.1"
+jobs:
+  cron-insert:
+    schedule: "*/2 * * * *"
+  cron-summary:
+    schedule: "*/10 * * * *"
+config:
+  APP_VERSION: 1.0.1
+---
+image:
+  tag: "1.0.1"
+jobs:
+  cron-insert:
+    schedule: "*/2 * * * *"
+  cron-summary:
+    schedule: "*/10 * * * *"
+config:
+  APP_VERSION: 1.0.1
+---
+replicaCount: 1
+image:
+  tag: "0.0.0"
+config:
+  APP_VERSION: "1.0.1"
+  LOG_LEVEL: info
+ingress:
+  host: sa-p8.local
+hpa:
+  minReplicas: 1
+  maxReplicas: 2
+resources:
+  requests:
+    cpu: 150m
+    memory: 192Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+---
+replicaCount: 1
+image:
+  tag: "0.0.0"
+config:
+  APP_VERSION: "1.0.1"
+  LOG_LEVEL: debug
+hpa:
+  minReplicas: 1
+  maxReplicas: 2
+---
+replicaCount: 1
+image:
+  tag: "0.0.0"
+config:
+  APP_VERSION: "1.0.1"
+  LOG_LEVEL: info
+hpa:
+  minReplicas: 1
+  maxReplicas: 2
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 300m
+    memory: 320Mi
+---
+replicaCount: 1
+image:
+  tag: "0.0.0"
+config:
+  APP_VERSION: "1.0.1"
+  LOG_LEVEL: debug
+hpa:
+  minReplicas: 1
+  maxReplicas: 2
+---
+replicaCount: 1
+image:
+  tag: "0.0.0"
+config:
+  APP_VERSION: "1.0.1"
+  LOG_LEVEL: info
+hpa:
+  minReplicas: 1
+  maxReplicas: 2
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 300m
+    memory: 320Mi
+---
+replicaCount: 1
+image:
+  tag: "0.0.0"
+config:
+  APP_VERSION: "1.0.1"
+  LOG_LEVEL: debug
+hpa:
+  minReplicas: 1
+  maxReplicas: 2
+---
+replicaCount: 1
+image:
+  tag: "0.0.0"
+config:
+  APP_VERSION: "1.0.1"
+  LOG_LEVEL: info
+hpa:
+  minReplicas: 1
+  maxReplicas: 2
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 300m
+    memory: 320Mi
+---
+replicaCount: 1
+image:
+  tag: "0.0.0"
+config:
+  APP_VERSION: "1.0.1"
+  LOG_LEVEL: debug
+hpa:
+  minReplicas: 1
+  maxReplicas: 2
+---
+replicaCount: 1
+image:
+  tag: "0.0.0"
+config:
+  APP_VERSION: "1.0.1"
+  LOG_LEVEL: info
+hpa:
+  minReplicas: 1
+  maxReplicas: 2
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 300m
+    memory: 320Mi
