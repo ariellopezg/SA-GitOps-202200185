@@ -1,9 +1,7 @@
-﻿image:
-  tag: "0.0.0"
-
+image:
+  tag: "1.0.2"
 jobs:
   cron-insert:
     schedule: "*/2 * * * *"
   cron-summary:
     schedule: "*/10 * * * *"
-
