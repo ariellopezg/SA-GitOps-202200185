@@ -1,8 +1,8 @@
 replicaCount: 1
 image:
-  tag: "1.0.2"
+  tag: "1.0.3"
 config:
-  APP_VERSION: "1.0.2"
+  APP_VERSION: "1.0.3"
   LOG_LEVEL: info
 ingress:
   host: sa-p8.local
