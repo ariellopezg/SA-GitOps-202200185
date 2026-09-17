@@ -33,7 +33,7 @@ spec:
               - templateName: {{ include "api-gateway.fullname" $ }}-health
             args:
               - name: service-name
-                value: {{ include "api-gateway.fullname" $ }}-canary
+                value: {{ include "api-gateway.fullname" $ }}-canary.{{ $.Release.Namespace }}.svc.cluster.local
               - name: service-port
                 value: {{ $.Values.service.port | quote }}
         {{- end }}
