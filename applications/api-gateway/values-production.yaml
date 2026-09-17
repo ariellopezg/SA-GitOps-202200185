@@ -1,0 +1,23 @@
+﻿replicaCount: 1
+
+image:
+  tag: "0.0.0"
+
+config:
+  APP_VERSION: "0.0.0"
+  LOG_LEVEL: info
+
+ingress:
+  host: sa-p8.local
+
+hpa:
+  minReplicas: 1
+  maxReplicas: 2
+
+resources:
+  requests:
+    cpu: 150m
+    memory: 192Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi

@@ -1,0 +1,36 @@
+﻿apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgresql-init-databases
+  labels:
+    {{- include "postgresql.labels" . | nindent 4 }}
+data:
+  01-create-databases.sh: |
+    #!/bin/sh
+    set -eu
+
+    create_database() {
+      database_user="$1"
+      database_password="$2"
+      database_name="$3"
+
+      psql --set=ON_ERROR_STOP=1 \
+        --username "$POSTGRES_USER" \
+        --dbname "$POSTGRES_DB" \
+        --set=database_user="$database_user" \
+        --set=database_password="$database_password" \
+        --set=database_name="$database_name" <<'SQL'
+    SELECT format('CREATE ROLE %I LOGIN PASSWORD %L', :'database_user', :'database_password')
+    WHERE NOT EXISTS (SELECT FROM pg_roles WHERE rolname = :'database_user') \gexec
+    SELECT format('CREATE DATABASE %I OWNER %I', :'database_name', :'database_user')
+    WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = :'database_name') \gexec
+    SELECT format('REVOKE CONNECT ON DATABASE %I FROM PUBLIC', :'database_name') \gexec
+    SELECT format('GRANT CONNECT ON DATABASE %I TO %I', :'database_name', :'database_user') \gexec
+    SQL
+    }
+
+    create_database "$AUTH_DATABASE_USER" "$AUTH_DATABASE_PASSWORD" "$AUTH_DATABASE_NAME"
+    create_database "$POSTS_DATABASE_USER" "$POSTS_DATABASE_PASSWORD" "$POSTS_DATABASE_NAME"
+    create_database "$COMMENTS_DATABASE_USER" "$COMMENTS_DATABASE_PASSWORD" "$COMMENTS_DATABASE_NAME"
+    create_database "$LIKES_DATABASE_USER" "$LIKES_DATABASE_PASSWORD" "$LIKES_DATABASE_NAME"
+    create_database "$JOBS_DATABASE_USER" "$JOBS_DATABASE_PASSWORD" "$JOBS_DATABASE_NAME"

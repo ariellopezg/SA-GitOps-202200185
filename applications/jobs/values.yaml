@@ -1,0 +1,37 @@
+﻿image:
+  repository: ghcr.io/ariellopezg/practicas-sa-b-202200185/jobs
+  tag: "0.0.0"
+  pullPolicy: IfNotPresent
+
+serviceAccountName: sa-platform
+timeZone: America/Guatemala
+suspend: false
+
+config:
+  STUDENT_ID: "202200185"
+  RABBITMQ_HOST: rabbitmq
+  RABBITMQ_PORT: "5672"
+
+resources:
+  requests:
+    cpu: 25m
+    memory: 32Mi
+  limits:
+    cpu: 100m
+    memory: 96Mi
+
+jobs:
+  cron-insert:
+    schedule: "*/2 * * * *"
+    script: /app/cron_insert.py
+    secretName: cron-insert-secret
+    backoffLimit: 2
+    successfulJobsHistoryLimit: 2
+    failedJobsHistoryLimit: 2
+  cron-summary:
+    schedule: "*/10 * * * *"
+    script: /app/cron_summary.py
+    secretName: cron-summary-secret
+    backoffLimit: 2
+    successfulJobsHistoryLimit: 2
+    failedJobsHistoryLimit: 2

@@ -1,0 +1,24 @@
+﻿apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: {{ include "api-gateway.fullname" . }}-health
+  labels:
+    {{- include "api-gateway.labels" . | nindent 4 }}
+spec:
+  args:
+    - name: service-name
+    - name: service-port
+  metrics:
+    - name: gateway-health
+      initialDelay: {{ .Values.analysis.initialDelay }}
+      interval: {{ .Values.analysis.interval }}
+      count: {{ .Values.analysis.count }}
+      failureLimit: {{ .Values.analysis.failureLimit }}
+      successCondition: result.status == "ok"
+      failureCondition: result.status != "ok"
+      provider:
+        web:
+          url: "http://{{ `{{ args.service-name }}` }}:{{ `{{ args.service-port }}` }}{{ .Values.healthPath }}"
+          timeoutSeconds: 5
+          jsonPath: "{$}"
+

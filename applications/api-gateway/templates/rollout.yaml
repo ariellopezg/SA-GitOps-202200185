@@ -1,0 +1,96 @@
+﻿apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: {{ include "api-gateway.fullname" . }}
+  labels:
+    {{- include "api-gateway.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.hpa.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  revisionHistoryLimit: {{ .Values.rollout.revisionHistoryLimit }}
+  progressDeadlineSeconds: {{ .Values.rollout.progressDeadlineSeconds }}
+  selector:
+    matchLabels:
+      {{- include "api-gateway.selectorLabels" . | nindent 6 }}
+  strategy:
+    canary:
+      stableService: {{ include "api-gateway.fullname" . }}
+      canaryService: {{ include "api-gateway.fullname" . }}-canary
+      scaleDownDelaySeconds: {{ .Values.rollout.scaleDownDelaySeconds }}
+      {{- if .Values.ingress.enabled }}
+      trafficRouting:
+        nginx:
+          stableIngress: {{ include "api-gateway.fullname" . }}
+      {{- end }}
+      steps:
+        {{- range .Values.rollout.steps }}
+        - setWeight: {{ .weight }}
+        - pause:
+            duration: {{ .pause }}
+        - analysis:
+            templates:
+              - templateName: {{ include "api-gateway.fullname" $ }}-health
+            args:
+              - name: service-name
+                value: {{ include "api-gateway.fullname" $ }}-canary
+              - name: service-port
+                value: {{ $.Values.service.port | quote }}
+        {{- end }}
+  template:
+    metadata:
+      labels:
+        {{- include "api-gateway.selectorLabels" . | nindent 8 }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    spec:
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: api-gateway
+          image: "{{ required "image.repository es obligatorio" .Values.image.repository }}:{{ required "image.tag es obligatorio" .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - name: http
+              containerPort: {{ .Values.containerPort }}
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "api-gateway.fullname" . }}-config
+            - secretRef:
+                name: {{ .Values.secretName }}
+          startupProbe:
+            httpGet:
+              path: {{ .Values.healthPath }}
+              port: http
+            periodSeconds: 5
+            failureThreshold: 30
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.healthPath }}
+              port: http
+            periodSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.healthPath }}
+              port: http
+            periodSeconds: 10
+            failureThreshold: 3
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+

@@ -1,0 +1,13 @@
+﻿replicaCount: 1
+
+image:
+  tag: "0.0.0"
+
+config:
+  APP_VERSION: "0.0.0"
+  LOG_LEVEL: debug
+
+hpa:
+  minReplicas: 1
+  maxReplicas: 2
+

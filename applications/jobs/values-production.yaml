@@ -1,0 +1,9 @@
+﻿image:
+  tag: "0.0.0"
+
+jobs:
+  cron-insert:
+    schedule: "*/2 * * * *"
+  cron-summary:
+    schedule: "*/10 * * * *"
+

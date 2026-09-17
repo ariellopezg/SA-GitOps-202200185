@@ -1,0 +1,11 @@
+﻿persistence:
+  size: 1Gi
+  storageClass: standard-rwo
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 250m
+    memory: 256Mi

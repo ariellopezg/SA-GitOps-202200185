@@ -1,0 +1,48 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: sa-platform-development
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          - service: api-gateway
+          - service: auth-service
+          - service: posts-service
+          - service: comments-service
+          - service: likes-service
+          - service: jobs
+          - service: postgresql
+          - service: rabbitmq
+  template:
+    metadata:
+      name: "development-{{service}}"
+      labels:
+        app.kubernetes.io/part-of: sa-platform
+        environment: development
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/ariellopezg/SA-GitOps-202200185.git
+        targetRevision: main
+        path: "applications/{{service}}"
+        helm:
+          releaseName: "{{service}}"
+          valueFiles:
+            - values-development.yaml
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: development
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=false
+        retry:
+          limit: 5
+          backoff:
+            duration: 10s
+            factor: 2
+            maxDuration: 3m

@@ -1,0 +1,7 @@
+﻿apiVersion: v2
+name: jobs
+description: Tareas programadas de la aplicación
+type: application
+version: 1.0.0
+appVersion: "0.0.0"
+

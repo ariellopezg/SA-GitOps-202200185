@@ -1,0 +1,23 @@
+﻿image:
+  repository: rabbitmq
+  tag: "4-management-alpine"
+  pullPolicy: IfNotPresent
+
+serviceAccountName: sa-platform
+secretName: rabbitmq-secret
+
+service:
+  amqpPort: 5672
+  managementPort: 15672
+
+persistence:
+  size: 1Gi
+  storageClass: ""
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi

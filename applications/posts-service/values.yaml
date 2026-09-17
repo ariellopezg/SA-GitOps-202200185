@@ -1,0 +1,56 @@
+﻿replicaCount: 1
+
+image:
+  repository: ghcr.io/ariellopezg/practicas-sa-b-202200185/posts-service
+  tag: "0.0.0"
+  pullPolicy: IfNotPresent
+
+serviceAccountName: sa-platform
+secretName: posts-service-secret
+
+containerPort: 8000
+healthPath: /health
+
+config:
+  APP_VERSION: "0.0.0"
+  RABBITMQ_HOST: "rabbitmq"
+  RABBITMQ_PORT: "5672"
+  CRASH_ON_STARTUP: "false"
+  LOG_LEVEL: "info"
+
+service:
+  port: 8000
+
+rollout:
+  revisionHistoryLimit: 3
+  progressDeadlineSeconds: 600
+  maxSurge: "100%"
+  maxUnavailable: 0
+  steps:
+    - weight: 20
+      pause: 20s
+    - weight: 50
+      pause: 20s
+    - weight: 80
+      pause: 20s
+
+analysis:
+  initialDelay: 5s
+  interval: 10s
+  count: 3
+  failureLimit: 1
+
+hpa:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 2
+  cpuUtilization: 60
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 250m
+    memory: 256Mi
+

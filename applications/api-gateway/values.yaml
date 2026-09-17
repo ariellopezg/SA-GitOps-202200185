@@ -1,0 +1,67 @@
+﻿replicaCount: 1
+
+image:
+  repository: ghcr.io/ariellopezg/practicas-sa-b-202200185/api-gateway
+  tag: "0.0.0"
+  pullPolicy: IfNotPresent
+
+serviceAccountName: sa-platform
+secretName: api-gateway-secret
+
+containerPort: 8080
+healthPath: /health
+
+config:
+  APP_VERSION: "0.0.0"
+  PORT: "8080"
+  AUTH_SERVICE_URL: http://auth-service:3000
+  POSTS_SERVICE_URL: http://posts-service:8000
+  COMMENTS_SERVICE_URL: http://comments-service:8001
+  LIKES_SERVICE_URL: http://likes-service:8002
+  JWT_EXPIRES_IN_SECONDS: "900"
+  JWT_RENEWAL_GRACE_SECONDS: "300"
+  COOKIE_NAME: auth_token
+  ADMIN_NAME: Administrador
+  LOG_LEVEL: info
+
+service:
+  port: 8080
+
+ingress:
+  enabled: true
+  className: nginx
+  host: sa-p8.local
+  annotations: {}
+
+rollout:
+  revisionHistoryLimit: 3
+  progressDeadlineSeconds: 600
+  scaleDownDelaySeconds: 30
+  steps:
+    - weight: 20
+      pause: 20s
+    - weight: 50
+      pause: 20s
+    - weight: 80
+      pause: 20s
+
+analysis:
+  initialDelay: 5s
+  interval: 10s
+  count: 3
+  failureLimit: 1
+
+hpa:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 2
+  cpuUtilization: 60
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+

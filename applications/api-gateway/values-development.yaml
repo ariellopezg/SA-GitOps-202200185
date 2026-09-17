@@ -1,0 +1,16 @@
+﻿replicaCount: 1
+
+image:
+  tag: "0.0.0"
+
+config:
+  APP_VERSION: "0.0.0"
+  LOG_LEVEL: debug
+
+ingress:
+  host: development.sa-p8.local
+
+hpa:
+  minReplicas: 1
+  maxReplicas: 2
+

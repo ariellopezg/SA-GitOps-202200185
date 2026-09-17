@@ -1,0 +1,6 @@
+﻿apiVersion: v2
+name: likes-service
+description: Servicio para administrar reacciones
+type: application
+version: 1.0.0
+appVersion: "0.0.0"
