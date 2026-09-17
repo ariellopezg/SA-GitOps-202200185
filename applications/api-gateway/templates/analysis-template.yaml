@@ -14,8 +14,8 @@ spec:
       interval: {{ .Values.analysis.interval }}
       count: {{ .Values.analysis.count }}
       failureLimit: {{ .Values.analysis.failureLimit }}
-      successCondition: result.status == "ok"
-      failureCondition: result.status != "ok"
+      successCondition: result.status == "failure-test"
+      failureCondition: result.status != "failure-test"
       provider:
         web:
           url: "http://{{ `{{ args.service-name }}` }}:{{ `{{ args.service-port }}` }}{{ .Values.healthPath }}"
