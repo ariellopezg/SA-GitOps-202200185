@@ -95,7 +95,7 @@ spec:
               - templateName: {{ include "posts-service.fullname" $ }}-health
             args:
               - name: service-name
-                value: {{ include "posts-service.fullname" $ }}-canary
+                value: {{ include "posts-service.fullname" $ }}-canary.{{ $.Release.Namespace }}.svc.cluster.local
               - name: service-port
                 value: {{ $.Values.service.port | quote }}
         {{- end }}
