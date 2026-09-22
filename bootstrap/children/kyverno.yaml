@@ -1,0 +1,36 @@
+# Instala Kyverno, que validará las configuraciones de Kubernetes según las políticas definidas
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: p9-kyverno
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-20"
+spec:
+  project: default
+  source:
+    repoURL: https://kyverno.github.io/kyverno/
+    chart: kyverno
+    targetRevision: 3.9.0
+    helm:
+      releaseName: kyverno
+      # Configura una réplica para cada componente principal de Kyverno
+      parameters:
+        - name: admissionController.replicas
+          value: "1"
+        - name: backgroundController.replicas
+          value: "1"
+        - name: cleanupController.replicas
+          value: "1"
+        - name: reportsController.replicas
+          value: "1"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kyverno
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

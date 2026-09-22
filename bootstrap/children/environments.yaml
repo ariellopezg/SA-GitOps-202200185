@@ -1,0 +1,27 @@
+# Sincronizar las configuraciones de los ambientes del proyecto
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: p9-environments
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/ariellopezg/SA-GitOps-202200185.git
+    targetRevision: main
+    # Argo CD busca los manifiestos en la carpeta environments
+    path: environments
+    directory:
+      recurse: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false

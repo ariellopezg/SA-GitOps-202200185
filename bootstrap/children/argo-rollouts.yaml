@@ -1,0 +1,34 @@
+# Instala Argo Rollouts mediante un chart de Helm
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  # Nombre de la aplicación y namespace donde se creará
+  name: p9-argo-rollouts
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-20"
+spec:
+  project: default
+  source:
+    # Argo CD descarga el chart argo-rollouts, versión 2.41.0,
+    # desde el repositorio de Helm de Argo
+    repoURL: https://argoproj.github.io/argo-helm
+    chart: argo-rollouts
+    targetRevision: 2.41.0
+    helm:
+      # Nombre de la instalación
+      releaseName: argo-rollouts
+      parameters:
+        - name: dashboard.enabled
+          value: "true"
+  destination:
+    # Instala Argo Rollouts en el cluster actual, en el namespace argo-rollouts
+    server: https://kubernetes.default.svc
+    namespace: argo-rollouts
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

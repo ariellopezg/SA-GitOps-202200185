@@ -1,0 +1,29 @@
+# Evitar que los contenedores se ejecuten como usuario root
+
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-non-root
+  annotations:
+    policies.kyverno.io/title: Exigir ejecución sin root
+    policies.kyverno.io/category: Seguridad
+    policies.kyverno.io/description: Impide que las cargas de la aplicación se ejecuten como root.
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: validate-pod-security-context
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - development
+                - production
+      validate:
+        message: El Pod debe declarar runAsNonRoot en true.
+        pattern:
+          spec:
+            securityContext:
+              runAsNonRoot: true

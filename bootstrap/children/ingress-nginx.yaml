@@ -1,0 +1,36 @@
+# Instala Ingress NGINX para recibir tráfico externo y
+# dirigirlo a los servicios del clúster
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: p9-ingress-nginx
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-20"
+spec:
+  project: default
+  source:
+    # Obtiene el chart ingress-nginx, versión 4.15.1
+    repoURL: https://kubernetes.github.io/ingress-nginx
+    chart: ingress-nginx
+    targetRevision: 4.15.1
+    helm:
+      # Nombre de la instalación
+      releaseName: ingress-nginx
+      parameters:
+          # Crea una réplica del controlador
+        - name: controller.replicaCount
+          value: "1"
+          # Expone el controlador mediante un balanceador de carga externo
+        - name: controller.service.type
+          value: LoadBalancer
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: ingress-nginx
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

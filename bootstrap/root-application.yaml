@@ -1,0 +1,35 @@
+# Crear la aplicación principal que le indica a Argo CD dónde
+# encontrar y qué aplicaciones hijas debe administrar
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  # Nombre de la aplicación y namespace donde se creará
+  name: sa-platform-root
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: sa-platform
+    app.kubernetes.io/component: bootstrap
+spec:
+  project: default
+  source:
+    # Repositorio que Argo CD debe consultar
+    repoURL: https://github.com/ariellopezg/SA-GitOps-202200185.git
+    # Indica que debe utilizar la rama main
+    targetRevision: main
+    # Indica la ruta donde se encuentran las aplicaciones hijas
+    path: bootstrap/children
+    directory:
+      recurse: true
+  destination:
+    # Las aplicaciones hijas se crearán en el cluster
+    # actual y en el namespace argocd
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      # Elimina recursos que ya no esten en el repositorio
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false

@@ -1,0 +1,31 @@
+# Impedir el uso de imágenes Docker con la etiqueta latest
+
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-latest-tag
+  annotations:
+    policies.kyverno.io/title: Prohibir la etiqueta latest
+    policies.kyverno.io/category: Cadena de suministro
+    policies.kyverno.io/description: Exige una versión identificable para cada imagen.
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: require-versioned-images
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - development
+                - production
+      validate:
+        message: Las imágenes deben usar una versión específica y no latest.
+        pattern:
+          spec:
+            containers:
+              - image: "!*:latest"
+            =(initContainers):
+              - image: "!*:latest"

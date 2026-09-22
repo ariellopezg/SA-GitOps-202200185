@@ -1,0 +1,26 @@
+# Aplicar las políticas de seguridad almacenadas en Git
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: p9-policies
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-10"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/ariellopezg/SA-GitOps-202200185.git
+    targetRevision: main
+    path: bootstrap/policies
+    directory:
+      recurse: true
+  destination:
+    # Aunque el destino indique kyverno, las políticas son ClusterPolicy
+    # por lo que pueden afectar al cluster completo
+    server: https://kubernetes.default.svc
+    namespace: kyverno
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
