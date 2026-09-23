@@ -9,7 +9,6 @@ serviceAccount:
       iam.gke.io/gcp-service-account: p9-velero@project-5807be0c-fd2c-493f-82c.iam.gserviceaccount.com
 
 configuration:
-  provider: gcp
   backupStorageLocation:
     - name: default
       provider: gcp
