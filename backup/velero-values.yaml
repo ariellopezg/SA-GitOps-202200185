@@ -1,0 +1,68 @@
+credentials:
+  useSecret: false
+
+serviceAccount:
+  server:
+    create: true
+    name: velero
+    annotations:
+      iam.gke.io/gcp-service-account: p9-velero@project-5807be0c-fd2c-493f-82c.iam.gserviceaccount.com
+
+configuration:
+  provider: gcp
+  backupStorageLocation:
+    - name: default
+      provider: gcp
+      bucket: project-5807be0c-fd2c-493f-82c-p9-velero
+      prefix: postgresql
+      default: true
+  uploaderType: kopia
+  defaultVolumesToFsBackup: true
+  defaultBackupTTL: 168h
+
+backupsEnabled: true
+snapshotsEnabled: false
+deployNodeAgent: true
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 250m
+    memory: 256Mi
+
+nodeAgent:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+  containerSecurityContext:
+    privileged: true
+
+initContainers:
+  - name: velero-plugin-for-gcp
+    image: velero/velero-plugin-for-gcp:v1.13.0
+    imagePullPolicy: IfNotPresent
+    volumeMounts:
+      - name: plugins
+        mountPath: /target
+
+schedules:
+  p9-postgresql-daily:
+    disabled: false
+    schedule: "0 9 * * *"
+    template:
+      ttl: 168h
+      storageLocation: default
+      includedNamespaces:
+        - development
+        - production
+      labelSelector:
+        matchLabels:
+          p9.sa.usac/backup: postgresql
+      snapshotVolumes: false
+      defaultVolumesToFsBackup: true

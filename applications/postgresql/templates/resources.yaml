@@ -1,4 +1,4 @@
-﻿apiVersion: v1
+apiVersion: v1
 kind: Service
 metadata:
   name: postgresql-headless
@@ -19,6 +19,7 @@ metadata:
   name: postgresql
   labels:
     {{- include "postgresql.labels" . | nindent 4 }}
+    p9.sa.usac/backup: postgresql
 spec:
   serviceName: postgresql-headless
   replicas: 1
@@ -29,6 +30,7 @@ spec:
     metadata:
       labels:
         {{- include "postgresql.selectorLabels" . | nindent 8 }}
+        p9.sa.usac/backup: postgresql
     spec:
       serviceAccountName: {{ .Values.serviceAccountName }}
       securityContext:
@@ -94,6 +96,8 @@ spec:
   volumeClaimTemplates:
     - metadata:
         name: data
+        labels:
+          p9.sa.usac/backup: postgresql
       spec:
         accessModes: ["ReadWriteOnce"]
         resources:
