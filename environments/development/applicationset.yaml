@@ -8,10 +8,28 @@ metadata:
   namespace: argocd
 spec:
   ignoreApplicationDifferences:
+    - name: development-api-gateway
+      jsonPointers:
+        - /spec/syncPolicy/automated
+    - name: development-auth-service
+      jsonPointers:
+        - /spec/syncPolicy/automated
     - name: development-posts-service
       jsonPointers:
         - /spec/syncPolicy/automated
+    - name: development-comments-service
+      jsonPointers:
+        - /spec/syncPolicy/automated
+    - name: development-likes-service
+      jsonPointers:
+        - /spec/syncPolicy/automated
     - name: development-jobs
+      jsonPointers:
+        - /spec/syncPolicy/automated
+    - name: development-postgresql
+      jsonPointers:
+        - /spec/syncPolicy/automated
+    - name: development-rabbitmq
       jsonPointers:
         - /spec/syncPolicy/automated
   # Configura un generador basado en una lista. ArgoCD recorrerá

@@ -5,10 +5,28 @@ metadata:
   namespace: argocd
 spec:
   ignoreApplicationDifferences:
+    - name: production-api-gateway
+      jsonPointers:
+        - /spec/syncPolicy/automated
+    - name: production-auth-service
+      jsonPointers:
+        - /spec/syncPolicy/automated
     - name: production-posts-service
       jsonPointers:
         - /spec/syncPolicy/automated
+    - name: production-comments-service
+      jsonPointers:
+        - /spec/syncPolicy/automated
+    - name: production-likes-service
+      jsonPointers:
+        - /spec/syncPolicy/automated
     - name: production-jobs
+      jsonPointers:
+        - /spec/syncPolicy/automated
+    - name: production-postgresql
+      jsonPointers:
+        - /spec/syncPolicy/automated
+    - name: production-rabbitmq
       jsonPointers:
         - /spec/syncPolicy/automated
   generators:
