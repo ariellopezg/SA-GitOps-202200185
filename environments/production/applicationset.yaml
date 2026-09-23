@@ -4,6 +4,13 @@ metadata:
   name: sa-platform-production
   namespace: argocd
 spec:
+  ignoreApplicationDifferences:
+    - name: production-posts-service
+      jsonPointers:
+        - /spec/syncPolicy/automated
+    - name: production-jobs
+      jsonPointers:
+        - /spec/syncPolicy/automated
   generators:
     - list:
         elements:

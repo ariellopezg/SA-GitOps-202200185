@@ -1,9 +1,21 @@
 apiVersion: argoproj.io/v1alpha1
+# Generador de aplicaciones de ArgoCD
 kind: ApplicationSet
 metadata:
+  # Asigna el nombre al conjunto de aplicaciones
   name: sa-platform-development
+  # Indica que el ApplicationSet se crea dentro del namespace "argocd"
   namespace: argocd
 spec:
+  ignoreApplicationDifferences:
+    - name: development-posts-service
+      jsonPointers:
+        - /spec/syncPolicy/automated
+    - name: development-jobs
+      jsonPointers:
+        - /spec/syncPolicy/automated
+  # Configura un generador basado en una lista. ArgoCD recorrerá
+  # sus elementos y creará una aplicación por cada uno
   generators:
     - list:
         elements:
@@ -15,34 +27,54 @@ spec:
           - service: jobs
           - service: postgresql
           - service: rabbitmq
+  # Plantilla utilizada para crear cada aplicación
   template:
     metadata:
+      # Nombre de cada aplicación, ejemplo: development-api-gateway, etc.
       name: "development-{{service}}"
       labels:
+        # Indica que todas las aplicaciones pertenecen a la misma plataforma
         app.kubernetes.io/part-of: sa-platform
+        # Pertenecen al ambiente de desarrollo
         environment: development
     spec:
       project: default
+      # Configuración del lugar donde ArgoCD buscará los archivos
       source:
+        # Indica que la fuente de verdad es el repositorio público GitOps
         repoURL: https://github.com/ariellopezg/SA-GitOps-202200185.git
+        # Vigilará la rama "main" de ese repositorio
         targetRevision: main
+        # Indica donde esta el chart de cada servicio
         path: "applications/{{service}}"
         helm:
           releaseName: "{{service}}"
           valueFiles:
             - values-development.yaml
+      # Define donde se desplegarán los recursos
       destination:
+        # Representa el mismo cluster donde se esta ejecutando ArgoCD
         server: https://kubernetes.default.svc
+        # Despliega los recursos dentro del namespace "development"
         namespace: development
       syncPolicy:
+        # Permite que ArgoCD sincronice automáticamente cuando detecte cambios en GitOps
         automated:
+          # Si se elimina un recurso de GitOps, ArgoCD también lo elimina del cluster
           prune: true
+          # Corrige cambios manuales realizados directamente en el cluster
           selfHeal: true
+        # Evita que ArgoCD cree el namespace "development"
+        # Los namespaces son responsabilidad de Terraform
         syncOptions:
           - CreateNamespace=false
         retry:
+          # Si una sincronización falla, ArgoCD reintentará hasta 5 veces
           limit: 5
           backoff:
+            # El primer reintento espera 10 segundos
             duration: 10s
+            # Duplica el tiempo de espera en cada reintento
             factor: 2
+            # La espera entre intentos nunca sera mayor a 3 minutos
             maxDuration: 3m
