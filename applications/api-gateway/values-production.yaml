@@ -7,7 +7,7 @@ config:
 ingress:
   host: sa-p8.local
 hpa:
-  minReplicas: 1
+  minReplicas: 2
   maxReplicas: 2
 resources:
   requests:
@@ -16,3 +16,6 @@ resources:
   limits:
     cpu: 500m
     memory: 512Mi
+
+resilience:
+  enabled: true

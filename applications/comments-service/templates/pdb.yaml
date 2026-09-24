@@ -1,0 +1,14 @@
+{{- if .Values.resilience.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "comments-service.fullname" . }}
+  labels:
+    {{- include "comments-service.labels" . | nindent 4 }}
+spec:
+  minAvailable: 1
+  unhealthyPodEvictionPolicy: AlwaysAllow
+  selector:
+    matchLabels:
+      {{- include "comments-service.selectorLabels" . | nindent 6 }}
+{{- end }}

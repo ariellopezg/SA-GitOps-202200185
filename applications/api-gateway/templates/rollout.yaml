@@ -1,4 +1,6 @@
-﻿apiVersion: argoproj.io/v1alpha1
+# Define los Pods y la estrategia de canary
+
+apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
   name: {{ include "api-gateway.fullname" . }}
@@ -6,6 +8,7 @@ metadata:
     {{- include "api-gateway.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.hpa.enabled }}
+  # Si HPA está desactivado, solo en ese caso asigna directamente replicaCount
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   revisionHistoryLimit: {{ .Values.rollout.revisionHistoryLimit }}
@@ -15,8 +18,11 @@ spec:
       {{- include "api-gateway.selectorLabels" . | nindent 6 }}
   strategy:
     canary:
+      # Identifica el Service de la versión estable
       stableService: {{ include "api-gateway.fullname" . }}
+      # Identifica el Service de la versión nueva
       canaryService: {{ include "api-gateway.fullname" . }}-canary
+      # Espera antes de retirar los Pods anteriores
       scaleDownDelaySeconds: {{ .Values.rollout.scaleDownDelaySeconds }}
       {{- if .Values.ingress.enabled }}
       trafficRouting:
@@ -24,11 +30,12 @@ spec:
           stableIngress: {{ include "api-gateway.fullname" . }}
       {{- end }}
       steps:
+        # Recorre los tres pasos definidos en values.yaml
         {{- range .Values.rollout.steps }}
-        - setWeight: {{ .weight }}
+        - setWeight: {{ .weight }}    # Asigna el porcentaje: 20, 50 u 80
         - pause:
-            duration: {{ .pause }}
-        - analysis:
+            duration: {{ .pause }}    # Espera 20s
+        - analysis:                   # Inicia el analisis automático
             templates:
               - templateName: {{ include "api-gateway.fullname" $ }}-health
             args:
@@ -45,8 +52,19 @@ spec:
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
     spec:
       serviceAccountName: {{ .Values.serviceAccountName }}
+      {{- if .Values.resilience.enabled }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    {{- include "api-gateway.selectorLabels" . | nindent 20 }}
+                topologyKey: kubernetes.io/hostname
+      {{- end }}
       securityContext:
-        runAsNonRoot: true
+        runAsNonRoot: true  # Obliga a ejecutar el contenedor con un usuario diferente de root
         seccompProfile:
           type: RuntimeDefault
       containers:
@@ -93,4 +111,3 @@ spec:
       volumes:
         - name: tmp
           emptyDir: {}
-
