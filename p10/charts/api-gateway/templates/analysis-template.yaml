@@ -1,0 +1,26 @@
+# Define la prueba que decide si el canaty puede avanzar
+
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: {{ include "api-gateway.fullname" . }}-health
+  labels:
+    {{- include "api-gateway.labels" . | nindent 4 }}
+spec:
+  args:
+    - name: service-name    # Nombre del servicio que debe consultar
+    - name: service-port    # Puerto del servicio
+  metrics:
+    - name: gateway-health
+      initialDelay: {{ .Values.analysis.initialDelay }}   # Espera el tiempo configurado antes de comenzar
+      interval: {{ .Values.analysis.interval }}           # Establece el tiempo entre comprobaciones
+      count: {{ .Values.analysis.count }}                 # Define cuantas veces se ejecutara
+      failureLimit: {{ .Values.analysis.failureLimit }}   # Define cuantos fallos se permiten
+      successCondition: result.status == "ok"             # La respuesta se considera correcta si el JSON contiene: {"status": "ok"}
+      failureCondition: result.status != "ok"
+      provider:
+        web:
+          url: "http://{{ `{{ args.service-name }}` }}:{{ `{{ args.service-port }}` }}{{ .Values.healthPath }}"
+          timeoutSeconds: 5
+          jsonPath: "{$}"
+

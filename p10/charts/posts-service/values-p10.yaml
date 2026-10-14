@@ -1,0 +1,10 @@
+resilience:
+  enabled: false
+hpa:
+  enabled: false
+replicaCount: 2
+image:
+  repository: ghcr.io/ariellopezg/practicas-sa-b-202200185/posts-service
+  tag: p10-1.0.1
+config:
+  APP_VERSION: 1.0.1

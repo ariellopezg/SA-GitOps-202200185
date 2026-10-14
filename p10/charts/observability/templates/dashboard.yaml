@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: p10-golden-signals
+  labels:
+    grafana_dashboard: '1'
+data:
+  golden-signals.json: |
+    {{- .Files.Get "dashboards/golden-signals.json" | nindent 4 }}

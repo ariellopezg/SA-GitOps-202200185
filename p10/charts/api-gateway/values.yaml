@@ -1,0 +1,75 @@
+# Configuración base del gateway
+
+# Cantidad inicial de Pods cuando HPA está desactivado
+replicaCount: 1
+resilience:
+  enabled: false
+
+image:
+  repository: ghcr.io/ariellopezg/practicas-sa-b-202200185/api-gateway
+  tag: "0.0.0"
+  pullPolicy: IfNotPresent    # Kubernetes descarga la imagen si no existe en el nodo
+
+serviceAccountName: sa-platform
+secretName: api-gateway-secret
+
+containerPort: 8080   # Puerto en el que escucha el gateway dentro del contenedor
+healthPath: /health   # Ruta para comprobar la salud del gateway
+
+# Configuración de la aplicación
+config:
+  APP_VERSION: "0.0.0"
+  PORT: "8080"
+  AUTH_SERVICE_URL: http://auth-service:3000
+  POSTS_SERVICE_URL: http://posts-service:8000
+  COMMENTS_SERVICE_URL: http://comments-service:8001
+  LIKES_SERVICE_URL: http://likes-service:8002
+  JWT_EXPIRES_IN_SECONDS: "900"
+  JWT_RENEWAL_GRACE_SECONDS: "300"
+  COOKIE_NAME: auth_token
+  ADMIN_NAME: Administrador
+  LOG_LEVEL: info
+
+# Puerto mediante el cual otros recursos acceden al gateway
+service:
+  port: 8080
+
+# Configuración para recibir peticiones desde fuera del namespace
+ingress:
+  enabled: true       # Indica que debe crearse el Ingress
+  className: nginx    # Indica que el tráfico será administrado por NGINX Ingress Controller
+  host: sa-p8.local
+  annotations: {}
+
+rollout:
+  revisionHistoryLimit: 3         # Conserva hasta 3 versiones anteriores. Facilita revisar o restaurar versiones
+  progressDeadlineSeconds: 600    # La actualización tiene un máximo de 10 minutos para avanzar
+  scaleDownDelaySeconds: 30       # Después de una actualización, espera 30 segundos antes de eliminar los Pods antiguos
+  steps:
+    - weight: 20    # Envia 20% del trafico al canary y espera 20s antes del analisis
+      pause: 20s
+    - weight: 50    # Si el paso anterior funciona, aumenta el trafico al 50% y vuelve a esperar
+      pause: 20s
+    - weight: 80    # Si continua saludable, aumenta al 80%
+      pause: 20s
+
+analysis:
+  initialDelay: 5s
+  interval: 10s
+  count: 3
+  failureLimit: 1   # Un fallo es suficiente para considerar que la actualización no es saludable
+
+hpa:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 2
+  cpuUtilization: 60
+
+# Recursos que Kubernetes reserva para cada Pod
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi

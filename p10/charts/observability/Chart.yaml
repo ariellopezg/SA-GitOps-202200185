@@ -1,0 +1,5 @@
+apiVersion: v2
+name: p10-observability
+version: 1.0.0
+description: Collector, Loki, Tempo, recording rules and dashboard for P10
+type: application

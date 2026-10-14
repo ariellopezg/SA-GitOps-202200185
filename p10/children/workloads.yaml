@@ -1,0 +1,40 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: p10-workloads
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: '3'
+spec:
+  generators:
+    - list:
+        elements:
+          - service: api-gateway
+          - service: auth-service
+          - service: posts-service
+          - service: comments-service
+          - service: likes-service
+          - service: postgresql
+          - service: rabbitmq
+  template:
+    metadata:
+      name: 'p10-{{service}}'
+      labels: {practice: p10}
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/ariellopezg/SA-GitOps-202200185.git
+        targetRevision: main
+        path: 'p10/charts/{{service}}'
+        helm:
+          releaseName: '{{service}}'
+          valueFiles: [values-p10.yaml]
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: p10
+      syncPolicy:
+        automated: {prune: true, selfHeal: true}
+        syncOptions: [CreateNamespace=false]
+        retry:
+          limit: 10
+          backoff: {duration: 10s, factor: 2, maxDuration: 2m}

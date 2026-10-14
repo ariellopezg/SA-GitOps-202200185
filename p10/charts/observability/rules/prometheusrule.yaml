@@ -1,0 +1,209 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: p10-slos
+  namespace: observability
+  labels:
+    release: p10-monitoring
+spec:
+  groups:
+  - name: p10.slis
+    interval: 10s
+    rules:
+    - record: sa:slo_bad_ratio:1m
+      expr: (sum by (service, namespace) (rate(sa_http_requests_total{namespace="p10",outcome="error"}[1m]))
+        or on(service, namespace) (0 * sum by (service, namespace) (rate(sa_http_requests_total{namespace="p10",outcome=~"success|error"}[1m]))))
+        / sum by (service, namespace) (rate(sa_http_requests_total{namespace="p10",outcome=~"success|error"}[1m]))
+      labels:
+        slo: availability
+    - record: sa:slo_burn_rate:1m
+      expr: sa:slo_bad_ratio:1m{slo="availability"} / 0.001
+      labels:
+        slo: availability
+    - record: sa:slo_bad_ratio:1m
+      expr: 1 - ((sum by (service, namespace) (rate(sa_http_request_duration_seconds_bucket{namespace="p10",outcome="success",le="0.5"}[1m]))
+        or on(service, namespace) (0 * sum by (service, namespace) (rate(sa_http_requests_total{namespace="p10",outcome=~"success|error"}[1m]))))
+        / sum by (service, namespace) (rate(sa_http_requests_total{namespace="p10",outcome=~"success|error"}[1m])))
+      labels:
+        slo: latency
+    - record: sa:slo_burn_rate:1m
+      expr: sa:slo_bad_ratio:1m{slo="latency"} / 0.050
+      labels:
+        slo: latency
+    - record: sa:slo_bad_ratio:5m
+      expr: (sum by (service, namespace) (rate(sa_http_requests_total{namespace="p10",outcome="error"}[5m]))
+        or on(service, namespace) (0 * sum by (service, namespace) (rate(sa_http_requests_total{namespace="p10",outcome=~"success|error"}[5m]))))
+        / sum by (service, namespace) (rate(sa_http_requests_total{namespace="p10",outcome=~"success|error"}[5m]))
+      labels:
+        slo: availability
+    - record: sa:slo_burn_rate:5m
+      expr: sa:slo_bad_ratio:5m{slo="availability"} / 0.001
+      labels:
+        slo: availability
+    - record: sa:slo_bad_ratio:5m
+      expr: 1 - ((sum by (service, namespace) (rate(sa_http_request_duration_seconds_bucket{namespace="p10",outcome="success",le="0.5"}[5m]))
+        or on(service, namespace) (0 * sum by (service, namespace) (rate(sa_http_requests_total{namespace="p10",outcome=~"success|error"}[5m]))))
+        / sum by (service, namespace) (rate(sa_http_requests_total{namespace="p10",outcome=~"success|error"}[5m])))
+      labels:
+        slo: latency
+    - record: sa:slo_burn_rate:5m
+      expr: sa:slo_bad_ratio:5m{slo="latency"} / 0.050
+      labels:
+        slo: latency
+    - record: sa:slo_bad_ratio:30m
+      expr: (sum by (service, namespace) (rate(sa_http_requests_total{namespace="p10",outcome="error"}[30m]))
+        or on(service, namespace) (0 * sum by (service, namespace) (rate(sa_http_requests_total{namespace="p10",outcome=~"success|error"}[30m]))))
+        / sum by (service, namespace) (rate(sa_http_requests_total{namespace="p10",outcome=~"success|error"}[30m]))
+      labels:
+        slo: availability
+    - record: sa:slo_burn_rate:30m
+      expr: sa:slo_bad_ratio:30m{slo="availability"} / 0.001
+      labels:
+        slo: availability
+    - record: sa:slo_bad_ratio:30m
+      expr: 1 - ((sum by (service, namespace) (rate(sa_http_request_duration_seconds_bucket{namespace="p10",outcome="success",le="0.5"}[30m]))
+        or on(service, namespace) (0 * sum by (service, namespace) (rate(sa_http_requests_total{namespace="p10",outcome=~"success|error"}[30m]))))
+        / sum by (service, namespace) (rate(sa_http_requests_total{namespace="p10",outcome=~"success|error"}[30m])))
+      labels:
+        slo: latency
+    - record: sa:slo_burn_rate:30m
+      expr: sa:slo_bad_ratio:30m{slo="latency"} / 0.050
+      labels:
+        slo: latency
+    - record: sa:slo_bad_ratio:1h
+      expr: (sum by (service, namespace) (rate(sa_http_requests_total{namespace="p10",outcome="error"}[1h]))
+        or on(service, namespace) (0 * sum by (service, namespace) (rate(sa_http_requests_total{namespace="p10",outcome=~"success|error"}[1h]))))
+        / sum by (service, namespace) (rate(sa_http_requests_total{namespace="p10",outcome=~"success|error"}[1h]))
+      labels:
+        slo: availability
+    - record: sa:slo_burn_rate:1h
+      expr: sa:slo_bad_ratio:1h{slo="availability"} / 0.001
+      labels:
+        slo: availability
+    - record: sa:slo_bad_ratio:1h
+      expr: 1 - ((sum by (service, namespace) (rate(sa_http_request_duration_seconds_bucket{namespace="p10",outcome="success",le="0.5"}[1h]))
+        or on(service, namespace) (0 * sum by (service, namespace) (rate(sa_http_requests_total{namespace="p10",outcome=~"success|error"}[1h]))))
+        / sum by (service, namespace) (rate(sa_http_requests_total{namespace="p10",outcome=~"success|error"}[1h])))
+      labels:
+        slo: latency
+    - record: sa:slo_burn_rate:1h
+      expr: sa:slo_bad_ratio:1h{slo="latency"} / 0.050
+      labels:
+        slo: latency
+    - record: sa:slo_bad_ratio:6h
+      expr: (sum by (service, namespace) (rate(sa_http_requests_total{namespace="p10",outcome="error"}[6h]))
+        or on(service, namespace) (0 * sum by (service, namespace) (rate(sa_http_requests_total{namespace="p10",outcome=~"success|error"}[6h]))))
+        / sum by (service, namespace) (rate(sa_http_requests_total{namespace="p10",outcome=~"success|error"}[6h]))
+      labels:
+        slo: availability
+    - record: sa:slo_burn_rate:6h
+      expr: sa:slo_bad_ratio:6h{slo="availability"} / 0.001
+      labels:
+        slo: availability
+    - record: sa:slo_bad_ratio:6h
+      expr: 1 - ((sum by (service, namespace) (rate(sa_http_request_duration_seconds_bucket{namespace="p10",outcome="success",le="0.5"}[6h]))
+        or on(service, namespace) (0 * sum by (service, namespace) (rate(sa_http_requests_total{namespace="p10",outcome=~"success|error"}[6h]))))
+        / sum by (service, namespace) (rate(sa_http_requests_total{namespace="p10",outcome=~"success|error"}[6h])))
+      labels:
+        slo: latency
+    - record: sa:slo_burn_rate:6h
+      expr: sa:slo_bad_ratio:6h{slo="latency"} / 0.050
+      labels:
+        slo: latency
+    - record: sa:slo_bad_ratio:3d
+      expr: (sum by (service, namespace) (rate(sa_http_requests_total{namespace="p10",outcome="error"}[3d]))
+        or on(service, namespace) (0 * sum by (service, namespace) (rate(sa_http_requests_total{namespace="p10",outcome=~"success|error"}[3d]))))
+        / sum by (service, namespace) (rate(sa_http_requests_total{namespace="p10",outcome=~"success|error"}[3d]))
+      labels:
+        slo: availability
+    - record: sa:slo_burn_rate:3d
+      expr: sa:slo_bad_ratio:3d{slo="availability"} / 0.001
+      labels:
+        slo: availability
+    - record: sa:slo_bad_ratio:3d
+      expr: 1 - ((sum by (service, namespace) (rate(sa_http_request_duration_seconds_bucket{namespace="p10",outcome="success",le="0.5"}[3d]))
+        or on(service, namespace) (0 * sum by (service, namespace) (rate(sa_http_requests_total{namespace="p10",outcome=~"success|error"}[3d]))))
+        / sum by (service, namespace) (rate(sa_http_requests_total{namespace="p10",outcome=~"success|error"}[3d])))
+      labels:
+        slo: latency
+    - record: sa:slo_burn_rate:3d
+      expr: sa:slo_bad_ratio:3d{slo="latency"} / 0.050
+      labels:
+        slo: latency
+    - record: sa:slo_bad_ratio:30d
+      expr: (sum by (service, namespace) (rate(sa_http_requests_total{namespace="p10",outcome="error"}[30d]))
+        or on(service, namespace) (0 * sum by (service, namespace) (rate(sa_http_requests_total{namespace="p10",outcome=~"success|error"}[30d]))))
+        / sum by (service, namespace) (rate(sa_http_requests_total{namespace="p10",outcome=~"success|error"}[30d]))
+      labels:
+        slo: availability
+    - record: sa:slo_burn_rate:30d
+      expr: sa:slo_bad_ratio:30d{slo="availability"} / 0.001
+      labels:
+        slo: availability
+    - record: sa:slo_bad_ratio:30d
+      expr: 1 - ((sum by (service, namespace) (rate(sa_http_request_duration_seconds_bucket{namespace="p10",outcome="success",le="0.5"}[30d]))
+        or on(service, namespace) (0 * sum by (service, namespace) (rate(sa_http_requests_total{namespace="p10",outcome=~"success|error"}[30d]))))
+        / sum by (service, namespace) (rate(sa_http_requests_total{namespace="p10",outcome=~"success|error"}[30d])))
+      labels:
+        slo: latency
+    - record: sa:slo_burn_rate:30d
+      expr: sa:slo_bad_ratio:30d{slo="latency"} / 0.050
+      labels:
+        slo: latency
+    - record: sa:slo_sli:30d
+      expr: 1 - sa:slo_bad_ratio:30d
+    - record: sa:slo_error_budget_consumed:30d
+      expr: sa:slo_burn_rate:30d
+    - record: sa:slo_error_budget_remaining:30d
+      expr: 1 - sa:slo_error_budget_consumed:30d
+  - name: p10.budget-alerts
+    interval: 10s
+    rules:
+    - alert: P10ErrorBudgetFastBurn
+      expr: (sa:slo_burn_rate:1h > 14.4) and on(service, namespace, slo) (sa:slo_burn_rate:5m
+        > 14.4)
+      for: 30s
+      labels:
+        severity: critical
+        practice: p10
+      annotations:
+        summary: 'Presupuesto de error en riesgo: {{ $labels.service }} / {{ $labels.slo
+          }}'
+        description: Dos ventanas confirman consumo equivalente a 2% en 1h del presupuesto
+          mensual. Revisar candidato y seguir alerta → traza → log.
+        runbook_url: https://github.com/ariellopezg/Practicas-SA-B-202200185/blob/main/P10/docs/runbooks.md#consumo-rapido
+        dashboard_url: http://localhost:3000/d/p10-golden-signals
+        trace_query: '{ resource.service.name = "{{ $labels.service }}" && status
+          = error }'
+        action: Abrir dashboard, elegir un exemplar, investigar Tempo y Loki; verificar
+          aborto automático del candidato.
+    - alert: P10ErrorBudgetSlowBurn
+      expr: (sa:slo_burn_rate:6h > 6) and on(service, namespace, slo) (sa:slo_burn_rate:30m
+        > 6)
+      for: 2m
+      labels:
+        severity: warning
+        practice: p10
+      annotations:
+        summary: 'Presupuesto de error en riesgo: {{ $labels.service }} / {{ $labels.slo
+          }}'
+        description: Dos ventanas confirman consumo equivalente a 5% en 6h del presupuesto
+          mensual. Revisar candidato y seguir alerta → traza → log.
+        runbook_url: https://github.com/ariellopezg/Practicas-SA-B-202200185/blob/main/P10/docs/runbooks.md#consumo-sostenido
+        dashboard_url: http://localhost:3000/d/p10-golden-signals
+        trace_query: '{ resource.service.name = "{{ $labels.service }}" && status
+          = error }'
+        action: Abrir dashboard, elegir un exemplar, investigar Tempo y Loki; verificar
+          aborto automático del candidato.
+    - alert: P10TelemetryMissing
+      expr: absent(up{namespace="observability",service="p10-collector"}) or max(up{namespace="observability",service="p10-collector"})
+        == 0
+      for: 2m
+      labels:
+        severity: warning
+        practice: p10
+      annotations:
+        summary: No hay scraping de microservicios
+        runbook_url: https://github.com/ariellopezg/Practicas-SA-B-202200185/blob/main/P10/docs/runbooks.md#telemetria
+        action: Comprobar Collector, permisos, targets y endpoints /metrics/. No promover
+          sin métricas.
