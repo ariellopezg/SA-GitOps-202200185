@@ -27,7 +27,7 @@ prometheusOperator:
       limits: {cpu: 100m, memory: 64Mi}
 prometheus:
   prometheusSpec:
-    retention: 7d
+    retention: 35d
     scrapeInterval: 10s
     evaluationInterval: 10s
     enableFeatures: [exemplar-storage]

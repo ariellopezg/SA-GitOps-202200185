@@ -34,7 +34,7 @@
         {
           "refId": "A",
           "expr": "sum by(service, revision)(rate(sa_http_requests_total{namespace=\"p10\"}[1m]))",
-          "legendFormat": "{{service}} {{revision}} {{slo}}",
+          "legendFormat": "{{service}} {{revision}}",
           "exemplar": true
         }
       ],
@@ -70,7 +70,7 @@
         {
           "refId": "A",
           "expr": "histogram_quantile(0.95,sum by(le,service,revision)(rate(sa_http_request_duration_seconds_bucket{namespace=\"p10\",outcome!=\"client_error\"}[1m])))",
-          "legendFormat": "{{service}} {{revision}} {{slo}}",
+          "legendFormat": "{{service}} {{revision}}",
           "exemplar": true
         }
       ],
@@ -106,7 +106,7 @@
         {
           "refId": "A",
           "expr": "(sum by(service,revision)(rate(sa_http_requests_total{namespace=\"p10\",outcome=\"error\"}[1m])) or on(service,revision) 0*sum by(service,revision)(rate(sa_http_requests_total{namespace=\"p10\",outcome!=\"client_error\"}[1m]))) / sum by(service,revision)(rate(sa_http_requests_total{namespace=\"p10\",outcome!=\"client_error\"}[1m]))",
-          "legendFormat": "{{service}} {{revision}} {{slo}}",
+          "legendFormat": "{{service}} {{revision}}",
           "exemplar": true
         }
       ],
@@ -142,7 +142,7 @@
         {
           "refId": "A",
           "expr": "sum by(service,revision)(sa_http_inflight{namespace=\"p10\"})",
-          "legendFormat": "{{service}} {{revision}} {{slo}}",
+          "legendFormat": "{{service}} {{revision}}",
           "exemplar": true
         }
       ],
@@ -178,7 +178,7 @@
         {
           "refId": "A",
           "expr": "sum by(pod)(rate(container_cpu_usage_seconds_total{namespace=\"p10\",container!=\"\",container!=\"POD\"}[1m])) / sum by(pod)(kube_pod_container_resource_limits{namespace=\"p10\",resource=\"cpu\"})",
-          "legendFormat": "{{service}} {{revision}} {{slo}}",
+          "legendFormat": "{{pod}}",
           "exemplar": true
         }
       ],
@@ -214,7 +214,7 @@
         {
           "refId": "A",
           "expr": "sum by(pod)(container_memory_working_set_bytes{namespace=\"p10\",container!=\"\",container!=\"POD\"}) / sum by(pod)(kube_pod_container_resource_limits{namespace=\"p10\",resource=\"memory\"})",
-          "legendFormat": "{{service}} {{revision}} {{slo}}",
+          "legendFormat": "{{pod}}",
           "exemplar": true
         }
       ],
@@ -250,7 +250,7 @@
         {
           "refId": "A",
           "expr": "sum by(service)(rate(sa_business_operations_total{namespace=\"p10\",operation=\"post_created\"}[5m])) * 60",
-          "legendFormat": "{{service}} {{revision}} {{slo}}",
+          "legendFormat": "{{service}} {{revision}}",
           "exemplar": true
         }
       ],
@@ -286,7 +286,7 @@
         {
           "refId": "A",
           "expr": "sum by(service)(rate(sa_business_operations_total{namespace=\"p10\",operation=\"comment_added\"}[5m])) * 60",
-          "legendFormat": "{{service}} {{revision}} {{slo}}",
+          "legendFormat": "{{service}} {{revision}}",
           "exemplar": true
         }
       ],
@@ -322,7 +322,7 @@
         {
           "refId": "A",
           "expr": "sa:slo_error_budget_consumed:30d{namespace=\"p10\"}",
-          "legendFormat": "{{service}} {{revision}} {{slo}}",
+          "legendFormat": "{{service}} {{slo}}",
           "exemplar": true
         }
       ],
@@ -358,13 +358,49 @@
         {
           "refId": "A",
           "expr": "sa:slo_burn_rate:5m{namespace=\"p10\"}",
-          "legendFormat": "{{service}} {{revision}} {{slo}}",
+          "legendFormat": "{{service}} {{slo}}",
           "exemplar": true
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 11,
+      "type": "timeseries",
+      "title": "SLO por revisión · ¿el estable oculta una cohorte fallida?",
+      "description": "Mismos objetivos por cohorte. La alerta rápida por revisión no permite que la estable diluya el daño del canary; historia disponible desde que nació la revisión.",
+      "gridPos": {
+        "x": 0,
+        "y": 40,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sa:slo_revision_error_budget_consumed:30d{namespace=\"p10\"}",
+          "legendFormat": "{{service}} {{slo}}",
+          "exemplar": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
         },
         "overrides": []
       },
