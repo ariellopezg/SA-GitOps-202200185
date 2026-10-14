@@ -1,0 +1,391 @@
+{
+  "uid": "p10-golden-signals",
+  "title": "P10 · del síntoma a la causa",
+  "schemaVersion": 39,
+  "version": 1,
+  "tags": [
+    "p10",
+    "slo",
+    "golden-signals"
+  ],
+  "timezone": "utc",
+  "refresh": "10s",
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "Tráfico · ¿cuántas peticiones atendemos?",
+      "description": "Demanda real por servicio y revisión. /health está excluido.",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by(service, revision)(rate(sa_http_requests_total{namespace=\"p10\"}[1m]))",
+          "legendFormat": "{{service}} {{revision}} {{slo}}",
+          "exemplar": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Latencia · ¿el candidato es más lento?",
+      "description": "p95 por hash del Rollout. Un exemplar abre la traza en Tempo.",
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95,sum by(le,service,revision)(rate(sa_http_request_duration_seconds_bucket{namespace=\"p10\",outcome!=\"client_error\"}[1m])))",
+          "legendFormat": "{{service}} {{revision}} {{slo}}",
+          "exemplar": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Errores · ¿qué revisión falla para el usuario?",
+      "description": "Incluye errores GraphQL HTTP 200. Un resultado ausente exige revisar targets.",
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(sum by(service,revision)(rate(sa_http_requests_total{namespace=\"p10\",outcome=\"error\"}[1m])) or on(service,revision) 0*sum by(service,revision)(rate(sa_http_requests_total{namespace=\"p10\",outcome!=\"client_error\"}[1m]))) / sum by(service,revision)(rate(sa_http_requests_total{namespace=\"p10\",outcome!=\"client_error\"}[1m]))",
+          "legendFormat": "{{service}} {{revision}} {{slo}}",
+          "exemplar": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Saturación · ¿se acumulan peticiones?",
+      "description": "Concurrencia por revisión; comparar con CPU, memoria y límite de recursos.",
+      "gridPos": {
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by(service,revision)(sa_http_inflight{namespace=\"p10\"})",
+          "legendFormat": "{{service}} {{revision}} {{slo}}",
+          "exemplar": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Saturación · CPU respecto al límite",
+      "description": "¿La lentitud coincide con CPU agotada?",
+      "gridPos": {
+        "x": 0,
+        "y": 16,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by(pod)(rate(container_cpu_usage_seconds_total{namespace=\"p10\",container!=\"\",container!=\"POD\"}[1m])) / sum by(pod)(kube_pod_container_resource_limits{namespace=\"p10\",resource=\"cpu\"})",
+          "legendFormat": "{{service}} {{revision}} {{slo}}",
+          "exemplar": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Saturación · memoria respecto al límite",
+      "description": "¿Estamos cerca de OOM? Revisar pod específico con kubectl describe.",
+      "gridPos": {
+        "x": 12,
+        "y": 16,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by(pod)(container_memory_working_set_bytes{namespace=\"p10\",container!=\"\",container!=\"POD\"}) / sum by(pod)(kube_pod_container_resource_limits{namespace=\"p10\",resource=\"memory\"})",
+          "legendFormat": "{{service}} {{revision}} {{slo}}",
+          "exemplar": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Negocio · publicaciones creadas por minuto",
+      "description": "Mide publicaciones confirmadas y evento enviado; no peticiones intentadas.",
+      "gridPos": {
+        "x": 0,
+        "y": 24,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by(service)(rate(sa_business_operations_total{namespace=\"p10\",operation=\"post_created\"}[5m])) * 60",
+          "legendFormat": "{{service}} {{revision}} {{slo}}",
+          "exemplar": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Negocio · comentarios añadidos por minuto",
+      "description": "Participación de usuarios: comentarios guardados en la base de datos.",
+      "gridPos": {
+        "x": 12,
+        "y": 24,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by(service)(rate(sa_business_operations_total{namespace=\"p10\",operation=\"comment_added\"}[5m])) * 60",
+          "legendFormat": "{{service}} {{revision}} {{slo}}",
+          "exemplar": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "SLO · ¿qué fracción del presupuesto consumimos?",
+      "description": "1 = 100% del presupuesto. Ventana móvil 30d con historia disponible; al inicio no equivale a 30d completos.",
+      "gridPos": {
+        "x": 0,
+        "y": 32,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sa:slo_error_budget_consumed:30d{namespace=\"p10\"}",
+          "legendFormat": "{{service}} {{revision}} {{slo}}",
+          "exemplar": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "SLO · ¿debemos intervenir ahora?",
+      "description": "Burn rate: 14.4 junto con 1h activa alerta rápida; 6 junto con 6h/30m activa alerta sostenida.",
+      "gridPos": {
+        "x": 12,
+        "y": 32,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sa:slo_burn_rate:5m{namespace=\"p10\"}",
+          "legendFormat": "{{service}} {{revision}} {{slo}}",
+          "exemplar": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      }
+    }
+  ],
+  "links": [
+    {
+      "title": "Alertmanager",
+      "url": "http://localhost:9093",
+      "targetBlank": true
+    },
+    {
+      "title": "Runbooks",
+      "url": "https://github.com/ariellopezg/Practicas-SA-B-202200185/blob/main/P10/docs/runbooks.md",
+      "targetBlank": true
+    }
+  ]
+}

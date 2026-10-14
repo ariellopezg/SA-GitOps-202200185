@@ -1,0 +1,45 @@
+# Su objetivo es impedir imágenes como "api-gateway:latest", porque "latest"
+# no identifica exactamente qué versión se esta desplegando
+
+apiVersion: kyverno.io/v1
+# Crea una política que puede funcionar en todo el cluster
+kind: ClusterPolicy
+metadata:
+  # Nombre de la política
+  name: p10-disallow-latest-tag
+  annotations:
+    # Titulo visible de la política
+    policies.kyverno.io/title: Prohibir la etiqueta latest
+    # Categoría de la política
+    policies.kyverno.io/category: Cadena de suministro
+    # Descripción de la política
+    policies.kyverno.io/description: Exige una versión identificable para cada imagen.
+spec:
+  # Hace que kyverno rechace un recurso que incumpla la regla
+  validationFailureAction: Enforce
+  # También revisa los recursos que ya existían cuando se instaló la política
+  background: true
+  rules:
+      # Asigna un nombre a la regla
+    - name: require-versioned-images
+      match:
+        any:
+          - resources:
+              # La regla revisa recursos de tipo "Pod"
+              kinds:
+                - Pod
+              # Solo se aplica a los Pods de "development" y "production"
+              namespaces:
+                - p10
+                - observability
+      validate:
+        # Mensaje mostrado si kubernetes rechaza un Pod
+        message: Las imágenes deben usar una versión específica y no latest.
+        # Revisa las imágenes de los contenedores
+        # Prohíbe que la imagen termine en ":latest"
+        pattern:
+          spec:
+            containers:
+              - image: "!*:latest"
+            =(initContainers):
+              - image: "!*:latest"

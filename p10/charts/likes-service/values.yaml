@@ -1,0 +1,60 @@
+replicaCount: 1
+resilience:
+  enabled: false
+
+image:
+  repository: ghcr.io/ariellopezg/practicas-sa-b-202200185/likes-service
+  tag: "0.0.0"
+  pullPolicy: IfNotPresent
+
+serviceAccountName: sa-platform
+secretName: likes-service-secret
+
+containerPort: 8000
+healthPath: /health
+
+config:
+  APP_VERSION: "0.0.0"
+  RABBITMQ_HOST: "rabbitmq"
+  RABBITMQ_PORT: "5672"
+  LOG_LEVEL: "info"
+  OTEL_SERVICE_NAME: likes-service
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://p10-collector.observability.svc.cluster.local:4318
+  OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+  P10_FAULT: none
+
+service:
+  port: 8002
+
+rollout:
+  revisionHistoryLimit: 3
+  progressDeadlineSeconds: 600
+  maxSurge: "100%"
+  maxUnavailable: 0
+  steps:
+    - weight: 20
+      pause: 90s
+    - weight: 50
+      pause: 90s
+    - weight: 80
+      pause: 90s
+
+analysis:
+  initialDelay: 5s
+  interval: 10s
+  count: 3
+  failureLimit: 1
+
+hpa:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 2
+  cpuUtilization: 60
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 250m
+    memory: 256Mi

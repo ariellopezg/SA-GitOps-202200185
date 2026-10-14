@@ -1,0 +1,20 @@
+# Este archivo contiene valores específicos para el entorno de desarrollo
+# Helm combina este archivo con values.yaml
+
+replicaCount: 1
+
+image:
+  tag: "0.0.0"
+
+config:
+  APP_VERSION: "0.0.0"
+  LOG_LEVEL: debug
+
+# Separa las peticiones de desarrollo mediante otro host
+ingress:
+  host: development.sa-p8.local
+
+hpa:
+  minReplicas: 1
+  maxReplicas: 2
+

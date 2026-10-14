@@ -1,0 +1,57 @@
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: p10-services
+          scrape_interval: 10s
+          metrics_path: /metrics/
+          kubernetes_sd_configs:
+            - role: pod
+              namespaces:
+                names: [p10]
+          relabel_configs:
+            - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
+              regex: posts-service|comments-service|likes-service
+              action: keep
+            - source_labels: [__meta_kubernetes_pod_container_port_name]
+              regex: http
+              action: keep
+            - source_labels: [__meta_kubernetes_pod_phase]
+              regex: Running
+              action: keep
+processors:
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 180
+    spike_limit_mib: 40
+  batch:
+    timeout: 1s
+exporters:
+  otlp/tempo:
+    endpoint: p10-tempo:4317
+    tls:
+      insecure: true
+  otlphttp/loki:
+    endpoint: http://p10-loki:3100/otlp
+  prometheus:
+    endpoint: 0.0.0.0:8889
+    enable_open_metrics: true
+    metric_expiration: 5m
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [otlp/tempo]
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [otlphttp/loki]
+    metrics:
+      receivers: [prometheus]
+      processors: [memory_limiter, batch]
+      exporters: [prometheus]

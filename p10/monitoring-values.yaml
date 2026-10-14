@@ -1,0 +1,118 @@
+fullnameOverride: p10-monitoring
+defaultRules:
+  create: false
+nodeExporter:
+  enabled: false
+kubeApiServer:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeEtcd:
+  enabled: false
+kubeProxy:
+  enabled: false
+prometheusOperator:
+  resources:
+    requests: {cpu: 100m, memory: 128Mi}
+    limits: {cpu: 500m, memory: 256Mi}
+  admissionWebhooks:
+    enabled: false
+  prometheusConfigReloader:
+    resources:
+      requests: {cpu: 10m, memory: 32Mi}
+      limits: {cpu: 100m, memory: 64Mi}
+prometheus:
+  prometheusSpec:
+    retention: 7d
+    scrapeInterval: 10s
+    evaluationInterval: 10s
+    enableFeatures: [exemplar-storage]
+    ruleSelectorNilUsesHelmValues: false
+    serviceMonitorSelectorNilUsesHelmValues: false
+    resources:
+      requests: {cpu: 200m, memory: 512Mi}
+      limits: {cpu: '1', memory: 1Gi}
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: standard-rwo
+          accessModes: [ReadWriteOnce]
+          resources:
+            requests: {storage: 5Gi}
+alertmanager:
+  config:
+    global:
+      resolve_timeout: 1m
+    route:
+      receiver: operation
+      group_by: [alertname, service, slo]
+      group_wait: 0s
+      group_interval: 1m
+      repeat_interval: 30m
+    receivers:
+      - name: operation
+  alertmanagerSpec:
+    resources:
+      requests: {cpu: 50m, memory: 64Mi}
+      limits: {cpu: 250m, memory: 128Mi}
+kube-state-metrics:
+  resources:
+    requests: {cpu: 50m, memory: 64Mi}
+    limits: {cpu: 250m, memory: 128Mi}
+grafana:
+  admin:
+    existingSecret: p10-grafana-admin
+    userKey: admin-user
+    passwordKey: admin-password
+  initChownData:
+    enabled: false
+  resources:
+    requests: {cpu: 100m, memory: 128Mi}
+    limits: {cpu: 500m, memory: 384Mi}
+  sidecar:
+    datasources:
+      exemplarTraceIdDestinations:
+        datasourceUid: tempo
+        traceIdLabelName: trace_id
+        urlDisplayLabel: Ver traza
+    resources:
+      requests: {cpu: 10m, memory: 32Mi}
+      limits: {cpu: 100m, memory: 64Mi}
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      searchNamespace: observability
+  testFramework:
+    enabled: false
+  additionalDataSources:
+    - name: Loki
+      uid: loki
+      type: loki
+      access: proxy
+      url: http://p10-loki:3100
+      jsonData:
+        derivedFields:
+          - name: TraceID
+            matcherRegex: '"trace_id"\s*:\s*"([0-9a-f]{32})"'
+            datasourceUid: tempo
+            url: '$${__value.raw}'
+            urlDisplayLabel: Ver traza
+    - name: Tempo
+      uid: tempo
+      type: tempo
+      access: proxy
+      url: http://p10-tempo:3200
+      jsonData:
+        tracesToLogsV2:
+          datasourceUid: loki
+          spanStartTimeShift: '-2m'
+          spanEndTimeShift: 2m
+          tags: [{key: service.name, value: service_name}]
+          filterByTraceID: false
+          filterBySpanID: false
+          customQuery: true
+          query: '{$${__tags}} | json | trace_id="$${__trace.traceId}"'
+        nodeGraph:
+          enabled: true

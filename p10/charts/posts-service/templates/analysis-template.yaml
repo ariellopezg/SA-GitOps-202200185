@@ -1,0 +1,47 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: posts-service-metrics
+spec:
+  args:
+    - name: namespace
+    - name: service
+    - name: candidate-hash
+  metrics:
+    - name: candidate-traffic
+      initialDelay: 10s
+      interval: 15s
+      count: 4
+      failureLimit: 0
+      successCondition: len(result) == 1 && !isNaN(result[0]) && result[0] >= 30
+      failureCondition: len(result) != 1 || isNaN(result[0]) || result[0] < 30
+      provider:
+        prometheus:
+          address: http://p10-monitoring-prometheus.observability.svc.cluster.local:9090
+          query: >-
+            sum(increase(sa_http_requests_total{namespace="{{ `{{args.namespace}}` }}",service="{{ `{{args.service}}` }}",revision="{{ `{{args.candidate-hash}}` }}",outcome!="client_error"}[1m])) or vector(0)
+    - name: candidate-error-rate
+      initialDelay: 10s
+      interval: 15s
+      count: 4
+      failureLimit: 0
+      successCondition: len(result) == 1 && !isNaN(result[0]) && !isInf(result[0]) && result[0] <= 0.01
+      failureCondition: len(result) != 1 || isNaN(result[0]) || isInf(result[0]) || result[0] > 0.01
+      provider:
+        prometheus:
+          address: http://p10-monitoring-prometheus.observability.svc.cluster.local:9090
+          query: >-
+            (sum(rate(sa_http_requests_total{namespace="{{ `{{args.namespace}}` }}",service="{{ `{{args.service}}` }}",revision="{{ `{{args.candidate-hash}}` }}",outcome="error"}[1m])) or vector(0))
+            / sum(rate(sa_http_requests_total{namespace="{{ `{{args.namespace}}` }}",service="{{ `{{args.service}}` }}",revision="{{ `{{args.candidate-hash}}` }}",outcome!="client_error"}[1m]))
+    - name: candidate-p95
+      initialDelay: 10s
+      interval: 15s
+      count: 4
+      failureLimit: 0
+      successCondition: len(result) == 1 && !isNaN(result[0]) && !isInf(result[0]) && result[0] <= 0.5
+      failureCondition: len(result) != 1 || isNaN(result[0]) || isInf(result[0]) || result[0] > 0.5
+      provider:
+        prometheus:
+          address: http://p10-monitoring-prometheus.observability.svc.cluster.local:9090
+          query: >-
+            histogram_quantile(0.95, sum by (le) (rate(sa_http_request_duration_seconds_bucket{namespace="{{ `{{args.namespace}}` }}",service="{{ `{{args.service}}` }}",revision="{{ `{{args.candidate-hash}}` }}",outcome!="client_error"}[1m])))

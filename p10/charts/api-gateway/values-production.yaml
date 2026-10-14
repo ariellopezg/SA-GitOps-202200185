@@ -1,0 +1,28 @@
+# Este archivo contiene valores específicos para el entorno de producción
+
+replicaCount: 1
+resilience:
+  enabled: true
+
+image:
+  tag: "0.0.0"
+
+config:
+  APP_VERSION: "0.0.0"
+  LOG_LEVEL: info
+
+# Host correspondiente a producción
+ingress:
+  host: sa-p8.local
+
+hpa:
+  minReplicas: 2
+  maxReplicas: 2
+
+resources:
+  requests:
+    cpu: 150m
+    memory: 192Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi

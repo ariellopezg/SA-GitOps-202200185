@@ -1,0 +1,34 @@
+# Su objetivo es impedir que las aplicaciones se ejecuten con el
+# usuario administrador (root) dentro del contenedor
+
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: p10-require-non-root
+  annotations:
+    policies.kyverno.io/title: Exigir ejecución sin root
+    policies.kyverno.io/category: Seguridad
+    policies.kyverno.io/description: Impide que las cargas de la aplicación se ejecuten como root.
+spec:
+  validationFailureAction: Enforce
+  background: true
+  # Crea una regla para validar la configuración de seguridad del Pod
+  rules:
+    - name: validate-pod-security-context
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - p10
+                - observability
+      validate:
+        # Mensaje mostrado cuando un Pod intenta ejecutarse sin esta protección
+        message: El Pod debe declarar runAsNonRoot en true.
+        # Esto le indica a kubernetes que el proceso principal del contenedor
+        # debe usar un usuario sin privilegios
+        pattern:
+          spec:
+            securityContext:
+              runAsNonRoot: true

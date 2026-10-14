@@ -1,0 +1,42 @@
+# Su objetivo es evitar que un contenedor consuma CPU o memoria
+# sin control y afecte a las demás aplicaciones del nodo
+
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: p10-require-resource-limits
+  annotations:
+    policies.kyverno.io/title: Exigir solicitudes y límites de recursos
+    policies.kyverno.io/category: Recursos
+    policies.kyverno.io/description: Evita cargas sin control de CPU o memoria.
+spec:
+  validationFailureAction: Enforce
+  background: true
+  # Crea la regla que validará los recursos de cada contenedor
+  rules:
+    - name: validate-container-resources
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - p10
+                - observability
+      validate:
+        # Mensaje mostrado cuando un Pod no declara los recursos necesarios
+        message: Cada contenedor debe declarar solicitudes y límites de CPU y memoria.
+        # La comprobación se repetirá para cada contenedor
+        foreach:
+            # Obtiene los contenedores normales y los de inicialización
+          - list: request.object.spec.[initContainers, containers][]
+            pattern:
+              resources:
+                # Exige una solicitud mínima de CPU y memoria
+                requests:
+                  cpu: "?*"
+                  memory: "?*"
+                # Exige límites máximos de CPU y memoria
+                limits:
+                  cpu: "?*"
+                  memory: "?*"

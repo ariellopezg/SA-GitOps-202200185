@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: p10-foundation
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: '0'
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/ariellopezg/SA-GitOps-202200185.git
+    targetRevision: main
+    path: p10/foundation
+    directory: {recurse: true}
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: p10
+  syncPolicy:
+    automated: {prune: true, selfHeal: true}
+    syncOptions: [CreateNamespace=false]
