@@ -116,6 +116,6 @@ grafana:
           filterByTraceID: false
           filterBySpanID: false
           customQuery: true
-          query: '{$${__tags}} | json | trace_id="$${__trace.traceId}"'
+          query: '{$${__tags}} |= "$${__trace.traceId}"'
         nodeGraph:
           enabled: true
