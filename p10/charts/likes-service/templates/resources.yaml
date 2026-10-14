@@ -121,7 +121,7 @@ spec:
             {{- end }}
             - name: ROLLOUT_HASH
               valueFrom:
-                fieldRef: {fieldPath: 'metadata.labels["rollouts-pod-template-hash"]'}
+                fieldRef: {fieldPath: "metadata.labels['rollouts-pod-template-hash']"}
             - name: POD_NAMESPACE
               valueFrom:
                 fieldRef: {fieldPath: metadata.namespace}
