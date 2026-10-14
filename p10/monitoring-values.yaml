@@ -49,6 +49,7 @@ alertmanager:
       resolve_timeout: 1m
     route:
       receiver: operation
+      routes: []
       group_by: [alertname, service, slo]
       group_wait: 0s
       group_interval: 1m
@@ -80,8 +81,8 @@ grafana:
         traceIdLabelName: trace_id
         urlDisplayLabel: Ver traza
     resources:
-      requests: {cpu: 10m, memory: 32Mi}
-      limits: {cpu: 100m, memory: 64Mi}
+      requests: {cpu: 50m, memory: 128Mi}
+      limits: {cpu: 250m, memory: 256Mi}
     dashboards:
       enabled: true
       label: grafana_dashboard
