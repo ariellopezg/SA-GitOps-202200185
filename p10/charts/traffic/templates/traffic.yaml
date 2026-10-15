@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: p10-traffic
+data:
+  live-traffic.py: |
+    {{- .Files.Get "files/live-traffic.py" | nindent 4 }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: p10-traffic
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app.kubernetes.io/name: p10-traffic}
+  template:
+    metadata:
+      labels: {app.kubernetes.io/name: p10-traffic}
+      annotations:
+        checksum/script: {{ .Files.Get "files/live-traffic.py" | sha256sum }}
+    spec:
+      serviceAccountName: sa-platform
+      automountServiceAccountToken: false
+      securityContext: {runAsNonRoot: true, runAsUser: 10001, runAsGroup: 10001, seccompProfile: {type: RuntimeDefault}}
+      containers:
+        - name: traffic
+          image: {{ .Values.image | quote }}
+          command: [python, /driver/live-traffic.py]
+          env:
+            - name: API_BASE_URL
+              value: http://api-gateway:8080
+            - name: ADMIN_EMAIL
+              valueFrom:
+                secretKeyRef: {name: auth-service-secret, key: ADMIN_EMAIL}
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef: {name: auth-service-secret, key: ADMIN_PASSWORD}
+          securityContext: {allowPrivilegeEscalation: false, readOnlyRootFilesystem: true, capabilities: {drop: [ALL]}}
+          resources:
+            requests: {cpu: 50m, memory: 64Mi}
+            limits: {cpu: 200m, memory: 128Mi}
+          readinessProbe:
+            exec:
+              command: [python, -c, "from pathlib import Path; assert Path('/tmp/ready').exists()"]
+            periodSeconds: 10
+          livenessProbe:
+            exec:
+              command: [python, -c, "import time; from pathlib import Path; assert time.time()-Path('/tmp/alive').stat().st_mtime < 120"]
+            initialDelaySeconds: 90
+            periodSeconds: 30
+          volumeMounts:
+            - {name: driver, mountPath: /driver, readOnly: true}
+            - {name: tmp, mountPath: /tmp}
+      volumes:
+        - name: driver
+          configMap: {name: p10-traffic}
+        - name: tmp
+          emptyDir: {}

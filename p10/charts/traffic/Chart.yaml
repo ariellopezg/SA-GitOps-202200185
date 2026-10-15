@@ -1,0 +1,5 @@
+apiVersion: v2
+name: p10-traffic
+version: 1.0.0
+type: application
+description: Authenticated low-rate business traffic for P10 review
