@@ -91,6 +91,16 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.secretName }}
                   key: RABBITMQ_PASSWORD
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - sh
+                  - -ec
+                  - |
+                    # Existing PVCs retain users; DEFAULT_PASS only initializes a blank database.
+                    rabbitmqctl -q -t 180 await_startup
+                    rabbitmqctl -q -t 30 change_password "$RABBITMQ_DEFAULT_USER" "$RABBITMQ_DEFAULT_PASS"
           ports:
             - name: amqp
               containerPort: {{ .Values.service.amqpPort }}
