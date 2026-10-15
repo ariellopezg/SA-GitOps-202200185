@@ -4,4 +4,7 @@ loki:
   image: grafana/loki:3.7.8
 tempo:
   image: grafana/tempo:2.10.3
+  resources:
+    requests: {cpu: 200m, memory: 512Mi}
+    limits: {cpu: '1', memory: 2Gi}
 storageClass: standard-rwo

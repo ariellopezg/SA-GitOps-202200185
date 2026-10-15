@@ -47,6 +47,10 @@ spec:
         - name: {{ $component }}
           image: {{ index (index $.Values $component) "image" | quote }}
           args: ["-config.file=/conf/config.yaml"]
+          {{- if eq $component "tempo" }}
+          env:
+            - {name: GOMEMLIMIT, value: 1536MiB}
+          {{- end }}
           securityContext: {allowPrivilegeEscalation: false, readOnlyRootFilesystem: true, capabilities: {drop: [ALL]}}
           ports:
             - {name: http, containerPort: {{ if eq $component "loki" }}3100{{ else }}3200{{ end }}}
@@ -57,8 +61,12 @@ spec:
             httpGet: {path: /ready, port: http}
             initialDelaySeconds: 10
           resources:
+            {{- if eq $component "tempo" }}
+            {{- toYaml $.Values.tempo.resources | nindent 12 }}
+            {{- else }}
             requests: {cpu: 100m, memory: 128Mi}
             limits: {cpu: 500m, memory: 512Mi}
+            {{- end }}
           volumeMounts:
             - {name: data, mountPath: /data}
             - {name: config, mountPath: /conf, readOnly: true}
