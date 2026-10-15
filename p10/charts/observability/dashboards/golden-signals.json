@@ -394,7 +394,7 @@
         {
           "refId": "A",
           "expr": "sa:slo_revision_error_budget_consumed:30d{namespace=\"p10\"}",
-          "legendFormat": "{{service}} {{slo}}",
+          "legendFormat": "{{service}} {{revision}} {{slo}}",
           "exemplar": true
         }
       ],
