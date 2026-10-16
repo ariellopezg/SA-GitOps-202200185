@@ -1,6 +1,6 @@
 {
   "uid": "p10-golden-signals",
-  "title": "P10 · del síntoma a la causa",
+  "title": "P10 - Estado de los servicios",
   "schemaVersion": 39,
   "version": 1,
   "tags": [
@@ -18,8 +18,8 @@
     {
       "id": 1,
       "type": "timeseries",
-      "title": "Tráfico · ¿cuántas peticiones atendemos?",
-      "description": "Demanda real por servicio y revisión. /health está excluido.",
+      "title": "Tráfico - Solicitudes por segundo",
+      "description": "Solicitudes atendidas por segundo, separadas por servicio y versión. No incluye las comprobaciones automáticas de salud.",
       "gridPos": {
         "x": 0,
         "y": 0,
@@ -54,8 +54,8 @@
     {
       "id": 2,
       "type": "timeseries",
-      "title": "Latencia · ¿el candidato es más lento?",
-      "description": "p95 por hash del Rollout. Un exemplar abre la traza en Tempo.",
+      "title": "Tiempo de respuesta - ¿Cuánto tarda el servicio?",
+      "description": "Tiempo en el que se completa aproximadamente el 95% de las solicitudes, por servicio y versión. El 5% restante puede tardar más.",
       "gridPos": {
         "x": 12,
         "y": 0,
@@ -90,8 +90,8 @@
     {
       "id": 3,
       "type": "timeseries",
-      "title": "Errores · ¿qué revisión falla para el usuario?",
-      "description": "Incluye errores GraphQL HTTP 200. Un resultado ausente exige revisar targets.",
+      "title": "Errores - Solicitudes que fallan",
+      "description": "Porcentaje de fallos del servicio, aunque la respuesta indique éxito. Excluye rechazos por datos incorrectos o falta de permisos.",
       "gridPos": {
         "x": 0,
         "y": 8,
@@ -126,8 +126,8 @@
     {
       "id": 4,
       "type": "timeseries",
-      "title": "Saturación · ¿se acumulan peticiones?",
-      "description": "Concurrencia por revisión; comparar con CPU, memoria y límite de recursos.",
+      "title": "Saturación - Solicitudes en curso",
+      "description": "Solicitudes que cada versión atiende al mismo tiempo. Un aumento puede indicar trabajo acumulado.",
       "gridPos": {
         "x": 12,
         "y": 8,
@@ -162,8 +162,8 @@
     {
       "id": 5,
       "type": "timeseries",
-      "title": "Saturación · CPU respecto al límite",
-      "description": "¿La lentitud coincide con CPU agotada?",
+      "title": "Saturación - Uso de CPU",
+      "description": "Porcentaje de la capacidad de procesamiento (CPU) usada por cada instancia del servicio respecto a su límite.",
       "gridPos": {
         "x": 0,
         "y": 16,
@@ -198,8 +198,8 @@
     {
       "id": 6,
       "type": "timeseries",
-      "title": "Saturación · memoria respecto al límite",
-      "description": "¿Estamos cerca de OOM? Revisar pod específico con kubectl describe.",
+      "title": "Saturación - Uso de memoria",
+      "description": "Porcentaje de memoria usada por cada instancia del servicio respecto a su límite.",
       "gridPos": {
         "x": 12,
         "y": 16,
@@ -234,8 +234,8 @@
     {
       "id": 7,
       "type": "timeseries",
-      "title": "Negocio · publicaciones creadas por minuto",
-      "description": "Mide publicaciones confirmadas y evento enviado; no peticiones intentadas.",
+      "title": "Actividad - Publicaciones creadas por minuto",
+      "description": "Publicaciones creadas correctamente por minuto, estimadas con los datos de los últimos cinco minutos.",
       "gridPos": {
         "x": 0,
         "y": 24,
@@ -270,8 +270,8 @@
     {
       "id": 8,
       "type": "timeseries",
-      "title": "Negocio · comentarios añadidos por minuto",
-      "description": "Participación de usuarios: comentarios guardados en la base de datos.",
+      "title": "Actividad - Comentarios añadidos por minuto",
+      "description": "Comentarios guardados por minuto, estimados con los datos de los últimos cinco minutos.",
       "gridPos": {
         "x": 12,
         "y": 24,
@@ -306,8 +306,8 @@
     {
       "id": 9,
       "type": "timeseries",
-      "title": "SLO · ¿qué fracción del presupuesto consumimos?",
-      "description": "1 = 100% del presupuesto. Ventana móvil 30d con historia disponible; al inicio no equivale a 30d completos.",
+      "title": "SLO - Margen de fallos consumido",
+      "description": "Los objetivos de calidad (SLO) permiten un margen de fallos. Aquí se muestra cuánto se usó: 100% significa agotado. Usa hasta 30 días de historial.",
       "gridPos": {
         "x": 0,
         "y": 32,
@@ -342,8 +342,8 @@
     {
       "id": 10,
       "type": "timeseries",
-      "title": "SLO · ¿debemos intervenir ahora?",
-      "description": "Burn rate: 14.4 junto con 1h activa alerta rápida; 6 junto con 6h/30m activa alerta sostenida.",
+      "title": "SLO - Velocidad de consumo del margen",
+      "description": "Rapidez con la que se consume el margen de fallos en los últimos cinco minutos. Un valor de 1 es el ritmo permitido; por encima de 1 se consume más rápido.",
       "gridPos": {
         "x": 12,
         "y": 32,
@@ -378,8 +378,8 @@
     {
       "id": 11,
       "type": "timeseries",
-      "title": "SLO por revisión · ¿el estable oculta una cohorte fallida?",
-      "description": "Mismos objetivos por cohorte. La alerta rápida por revisión no permite que la estable diluya el daño del canary; historia disponible desde que nació la revisión.",
+      "title": "SLO por revisión - Margen consumido por versión",
+      "description": "Margen de fallos usado por cada versión; 100% significa agotado. Ayuda a encontrar una versión con problemas aunque las demás funcionen bien.",
       "gridPos": {
         "x": 0,
         "y": 40,
@@ -414,12 +414,12 @@
   ],
   "links": [
     {
-      "title": "Alertmanager",
+      "title": "Alertas del sistema",
       "url": "http://localhost:9093",
       "targetBlank": true
     },
     {
-      "title": "Runbooks",
+      "title": "Guías para atender alertas",
       "url": "https://github.com/ariellopezg/Practicas-SA-B-202200185/blob/main/P10/docs/runbooks.md",
       "targetBlank": true
     }
