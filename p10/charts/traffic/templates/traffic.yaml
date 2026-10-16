@@ -43,10 +43,12 @@ spec:
           readinessProbe:
             exec:
               command: [python, -c, "from pathlib import Path; assert Path('/tmp/ready').exists()"]
+            timeoutSeconds: 5
             periodSeconds: 10
           livenessProbe:
             exec:
               command: [python, -c, "import time; from pathlib import Path; assert time.time()-Path('/tmp/alive').stat().st_mtime < 120"]
+            timeoutSeconds: 5
             initialDelaySeconds: 90
             periodSeconds: 30
           volumeMounts:
